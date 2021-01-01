@@ -1,0 +1,49 @@
+# Workflow that builds and tests Actinic on Windows and Ubuntu Linux
+name: Actinic CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build-linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies for PulseAudio Impulse library
+        run: sudo apt install libpulse-dev libfftw3-dev
+      - name: Check out source code
+        uses: actions/checkout@v2.1.0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Linux
+          path: |
+            ${{ github.workspace }}/Actinic/Actinic/bin/Debug/*.exe
+            ${{ github.workspace }}/Actinic/Actinic/bin/Debug/*.so
+
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2.1.0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows
+          path: ${{ github.workspace }}/Actinic/Actinic/bin/Debug/*.exe
